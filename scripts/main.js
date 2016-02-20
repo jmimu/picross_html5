@@ -100,11 +100,13 @@ function drawGrid(svg) {
                    [0,0,1,0,0],
                    [1,1,0,1,1],
                    [0,0,0,0,0]];
+  grid_solution = [[0, 0, 0, 0, 0, 0, 1, 1, 1, 1], [0, 0, 0, 0, 0, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 1, 1, 0, 0, 1], [0, 1, 1, 1, 0, 1, 1, 0, 1, 1], [0, 1, 0, 1, 1, 1, 1, 1, 1, 1], [0, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 0, 1, 0, 1, 0, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 0, 0, 0, 0, 1, 1, 1]];
+
   
-  grid_cols = 5;
+  grid_cols = grid_solution[0].length;
   
   col_w_ppx = 25;//ppx = pseudo pixel
-  info_size_ppx = 18*grid_cols;
+  info_size_ppx = 15*grid_cols;
   draw_size_ppx = info_size_ppx+col_w_ppx*grid_cols;
   
   
@@ -147,8 +149,8 @@ function drawGrid(svg) {
     for (i=0;i<all_hz_texts[j].length;i++)
     {
       decal=0;
-      if (all_hz_texts[j][i].length>1) decal=-5;
-      svg.text(g,info_size_ppx-(all_hz_texts[j].length-i-0.5)*text_w_pps+decal,info_size_ppx+col_w_ppx*j+col_w_ppx-6,all_hz_texts[j][i].toString());
+      if (all_hz_texts[j][i]>=10) decal=-5;
+      svg.text(g,info_size_ppx-(all_hz_texts[j].length-i-0.3)*text_w_pps+decal,info_size_ppx+col_w_ppx*j+col_w_ppx-6,all_hz_texts[j][i].toString());
     }
   }
   
@@ -159,7 +161,7 @@ function drawGrid(svg) {
     for (i=0;i<all_vert_texts[j].length;i++)
     {
       decal=0;
-      if (all_vert_texts[j][i].length>1) decal=-5;
+      if (all_vert_texts[j][i]>=10) decal=-5;
       svg.text(g,info_size_ppx+7+decal+col_w_ppx*j,info_size_ppx-(all_vert_texts[j].length-i-1)*text_w_pps-6,all_vert_texts[j][i].toString());
     }
   }
