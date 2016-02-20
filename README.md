@@ -5,7 +5,5 @@ PICROSS
 
 TODO
 ====
-  * show every 5 line/col
-  * show hover line/col
+  * out of grid: no special line/col, stop current_action
   * show completed values
-  * lines with 2 digits: not ok

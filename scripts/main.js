@@ -1,13 +1,20 @@
 var main_svg=0;
+var all_hz_svg_texts=[];
+var all_vert_svg_texts=[];
+
+var current_action=-1;//not changing squares
 
 $(document).ready(function() //or $(function()
   {
+    $(document)[0].addEventListener('mouseup', mouseUp, false);
+
     $('#svgbasics')[0].oncontextmenu = function() {return false;} //remove left click menu on svg part
     
     $('#svgbasics').svg({onLoad: drawGrid});
     
   }
 );
+
 
 function compute_hz_numbers(grid)
 {
@@ -64,34 +71,114 @@ function compute_vert_numbers(grid)
   return hz_numbers;
 }
 
-function squareLeftClick(evt) { 
-  console.log("Lclick");
-  var square = evt.target;
-  var square_status=square.getAttribute("status"); 
-  if (square_status!=1)
-  {
-    square.setAttribute("status", 1); 
-    square.setAttribute("fill", 'black');
-  }else{
-    square.setAttribute("status", 0); 
-    square.setAttribute("fill", 'white');
-  }
+
+function check_grid()
+{
+  console.log("Current ",current_grid);
+  console.log("Solution ",grid_solution);
+  for (j = 0; j < grid_cols; j++)
+    for (i = 0; i < grid_cols; i++)
+    {
+      //console.log("Check ",current_grid[j][i]," ",grid_solution[j][i]);
+      if (current_grid[j][i]!=grid_solution[j][i])
+        return false;
+    }
+  
+  alert("Fini!");
+  current_action=-1;
+  return true;
 }
 
-function squareRightClick(evt) { 
-  console.log("Rclick");
-  var square = evt.target;
+function updateSquare(square,button)
+{
   var square_status=square.getAttribute("status"); 
-  if (square_status!=2)
+  console.log(button);
+  if (button==0)
   {
-    square.setAttribute("status", 2); 
-    square.setAttribute("fill", 'gray');
-    ///TODO: draw an x ?
+    if (square_status!=1)
+    {
+      square.setAttribute("status", 1); 
+      square.setAttribute("fill", 'black');
+      current_action=1;
+      current_grid[square.getAttribute("line")][square.getAttribute("col")]=1;
+    }else{
+      square.setAttribute("status", 0); 
+      square.setAttribute("fill", 'white');
+      current_action=0;
+      current_grid[square.getAttribute("line")][square.getAttribute("col")]=0;
+    }
   }else{
-    square.setAttribute("status", 0); 
-    square.setAttribute("fill", 'white');
+    if (square_status!=2)
+    {
+      square.setAttribute("status", 2); 
+      square.setAttribute("fill", 'gray');
+      current_action=2;
+
+      ///TODO: draw an x ?
+    }else{
+      square.setAttribute("status", 0); 
+      square.setAttribute("fill", 'white');
+      current_action=0;
+    }
   }
+  check_grid();
 }
+
+function updateSquareAction(square,action)
+{
+  square.setAttribute("status", action); 
+  if (action==0)
+    square.setAttribute("fill", 'white');
+  if (action==2)
+    square.setAttribute("fill", 'gray');
+  if (action==1)
+  {
+    square.setAttribute("fill", 'black');
+    current_grid[square.getAttribute("line")][square.getAttribute("col")]=1;
+  }else{
+    current_grid[square.getAttribute("line")][square.getAttribute("col")]=0;
+  }
+  
+  check_grid();
+}
+
+function squareClick(evt) { 
+  console.log("Click");
+  updateSquare(evt.target,evt.button);
+  evt.preventDefault();//to cancel select/copy
+}
+
+function mouseUp(evt) { 
+  console.log("up");
+  current_action=-1;
+}
+
+
+function squareEnter(evt) { 
+  console.log("Enter");
+  if (current_action>-1)
+    updateSquareAction(evt.target,current_action);
+  
+  line=evt.target.getAttribute("line");
+  for (i=0;i<all_hz_svg_texts.length;i++)
+    if (all_hz_svg_texts[i].getAttribute("line")==line)
+    {
+      all_hz_svg_texts[i].setAttribute("stroke", "green");
+    }else{
+      all_hz_svg_texts[i].setAttribute("stroke", "blue");
+    }
+
+  col=evt.target.getAttribute("col");
+  for (i=0;i<all_vert_svg_texts.length;i++)
+    if (all_vert_svg_texts[i].getAttribute("col")==col)
+    {
+      all_vert_svg_texts[i].setAttribute("stroke", "green");
+    }else{
+      all_vert_svg_texts[i].setAttribute("stroke", "blue");
+    }
+
+}
+
 
 function drawGrid(svg) {
   main_svg=svg;
@@ -100,10 +187,18 @@ function drawGrid(svg) {
                    [0,0,1,0,0],
                    [1,1,0,1,1],
                    [0,0,0,0,0]];
-  grid_solution = [[0, 0, 0, 0, 0, 0, 1, 1, 1, 1], [0, 0, 0, 0, 0, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 1, 1, 0, 0, 1], [0, 1, 1, 1, 0, 1, 1, 0, 1, 1], [0, 1, 0, 1, 1, 1, 1, 1, 1, 1], [0, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 0, 1, 0, 1, 0, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 0, 0, 0, 0, 1, 1, 1]];
+  //grid_solution = [[0, 0, 0, 0, 0, 0, 1, 1, 1, 1], [0, 0, 0, 0, 0, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 1, 1, 0, 0, 1], [0, 1, 1, 1, 0, 1, 1, 0, 1, 1], [0, 1, 0, 1, 1, 1, 1, 1, 1, 1], [0, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 0, 1, 0, 1, 0, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 0, 0, 0, 0, 1, 1, 1]];
 
   
   grid_cols = grid_solution[0].length;
+  
+  current_grid=[];
+  for (j = 0; j < grid_cols; j++) {
+    current_grid.push([]);
+    for (i = 0; i < grid_cols; i++)
+      current_grid[j].push(0);
+  }
+      
   
   col_w_ppx = 25;//ppx = pseudo pixel
   info_size_ppx = 15*grid_cols;
@@ -121,27 +216,37 @@ function drawGrid(svg) {
   
   for (i = 0; i <= grid_cols; i++) {
     y=info_size_ppx+col_w_ppx*i;
-    svg.line(g,0, y, draw_size_ppx, y);
+    var line=svg.line(g,0, y, draw_size_ppx, y);
+    if (i%5==0)
+      line.setAttribute("stroke", "red");
   }
   
   for (i = 0; i <= grid_cols; i++) {
     x=info_size_ppx+col_w_ppx*i;
-    svg.line(g,x,0, x, draw_size_ppx);
+    var line=svg.line(g,x,0, x, draw_size_ppx);
+    if (i%5==0)
+      line.setAttribute("stroke", "red");
   }
   
   for (j = 0; j < grid_cols; j++) {
     y=info_size_ppx+col_w_ppx*j;
     for (i = 0; i < grid_cols; i++) {
       x=info_size_ppx+col_w_ppx*i;
-      var rect=svg.rect(g, x, y, col_w_ppx, col_w_ppx, {onclick: 'squareLeftClick(evt)', fill: 'white', stroke: 'black', strokeWidth: 1});
+      var rect=svg.rect(g, x+1, y+1, col_w_ppx-2, col_w_ppx-2, {/*onclick: 'squareLeftClick(evt)',*/ fill: 'white', stroke: 'none', strokeWidth: 1});
       rect.setAttribute("status", 0);
-      rect.addEventListener('contextmenu', squareRightClick, false);
+      rect.setAttribute("line", j);
+      rect.setAttribute("col", i);
+      //rect.addEventListener('contextmenu', squareRightClick, false);
+      rect.addEventListener('mousedown', squareClick, false);
+      rect.addEventListener('mouseover', squareEnter, false);
     }
   }
   
-  text_w_pps = 30;
+  var text_w_pps = 30;
   
-  all_hz_texts=compute_hz_numbers(grid_solution);
+  var all_hz_texts=compute_hz_numbers(grid_solution);
+  
+  all_hz_svg_texts=[];
   
   //test: hz
   for (j=0;j<all_hz_texts.length;j++)
@@ -150,11 +255,16 @@ function drawGrid(svg) {
     {
       decal=0;
       if (all_hz_texts[j][i]>=10) decal=-5;
-      svg.text(g,info_size_ppx-(all_hz_texts[j].length-i-0.3)*text_w_pps+decal,info_size_ppx+col_w_ppx*j+col_w_ppx-6,all_hz_texts[j][i].toString());
+      var text=svg.text(g,info_size_ppx-(all_hz_texts[j].length-i-0.3)*text_w_pps+decal,info_size_ppx+col_w_ppx*j+col_w_ppx-6,all_hz_texts[j][i].toString());
+      text.setAttribute("line", j);
+      text.setAttribute("stroke", "blue");
+      all_hz_svg_texts.push(text);
     }
   }
   
   var all_vert_texts=compute_vert_numbers(grid_solution);
+  all_vert_svg_texts=[];
+
   //test: vert
   for (j=0;j<all_vert_texts.length;j++)
   {
@@ -162,7 +272,10 @@ function drawGrid(svg) {
     {
       decal=0;
       if (all_vert_texts[j][i]>=10) decal=-5;
-      svg.text(g,info_size_ppx+7+decal+col_w_ppx*j,info_size_ppx-(all_vert_texts[j].length-i-1)*text_w_pps-6,all_vert_texts[j][i].toString());
+      var text=svg.text(g,info_size_ppx+7+decal+col_w_ppx*j,info_size_ppx-(all_vert_texts[j].length-i-1)*text_w_pps-6,all_vert_texts[j][i].toString());
+      text.setAttribute("col", j);
+      text.setAttribute("stroke", "blue");
+      all_vert_svg_texts.push(text);
     }
   }
   
